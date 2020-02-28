@@ -89,7 +89,7 @@ public class Application extends android.app.Application implements InjectorProv
                     try {
                         if (!didStartRootShell)
                             app.rootShell.start();
-                        backend = new WgQuickBackend(app.getApplicationContext());
+                        backend = new WgQuickBackend(app.getApplicationContext(), getRootShell(), getToolsInstaller());
                     } catch (final Exception ignored) {
                     }
                 }
@@ -155,7 +155,7 @@ public class Application extends android.app.Application implements InjectorProv
 
         asyncWorker = new AsyncWorker(AsyncTask.SERIAL_EXECUTOR, new Handler(Looper.getMainLooper()));
         rootShell = new RootShell(getApplicationContext());
-        toolsInstaller = new ToolsInstaller(getApplicationContext());
+        toolsInstaller = new ToolsInstaller(getApplicationContext(), getRootShell());
         moduleLoader = new ModuleLoader(getApplicationContext());
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -167,7 +167,7 @@ public class Application extends android.app.Application implements InjectorProv
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         }
 
-        tunnelManager = new TunnelManager(new FileConfigStore(getApplicationContext()));
+        tunnelManager = new TunnelManager(getAsyncWorker(), getBackend(), new FileConfigStore(getApplicationContext()), get(), getSharedPreferences());
         tunnelManager.onCreate();
 
         asyncWorker.supplyAsync(Application::getBackend).thenAccept(futureBackend::complete);
