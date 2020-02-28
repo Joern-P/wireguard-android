@@ -15,6 +15,7 @@ import android.os.Looper;
 import android.os.StrictMode;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -23,6 +24,9 @@ import com.wireguard.android.backend.Backend;
 import com.wireguard.android.backend.GoBackend;
 import com.wireguard.android.backend.WgQuickBackend;
 import com.wireguard.android.configStore.FileConfigStore;
+import com.wireguard.android.di.AppComponent;
+import com.wireguard.android.di.DaggerAppComponent;
+import com.wireguard.android.di.InjectorProvider;
 import com.wireguard.android.model.TunnelManager;
 import com.wireguard.android.util.AsyncWorker;
 import com.wireguard.android.util.ModuleLoader;
@@ -34,7 +38,7 @@ import java.util.Locale;
 
 import java9.util.concurrent.CompletableFuture;
 
-public class Application extends android.app.Application {
+public class Application extends android.app.Application implements InjectorProvider {
     private static final String TAG = "WireGuard/" + Application.class.getSimpleName();
     public static final String USER_AGENT;
 
@@ -136,6 +140,12 @@ public class Application extends android.app.Application {
         if (BuildConfig.DEBUG) {
             StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
         }
+    }
+
+    @NonNull
+    @Override
+    public AppComponent getComponent() {
+        return DaggerAppComponent.factory().create(getApplicationContext());
     }
 
     @Override
