@@ -30,6 +30,7 @@ import com.wireguard.android.fragment.TunnelListFragment
 import com.wireguard.android.model.TunnelManager
 import com.wireguard.android.preference.ToolsInstallerPreference
 import com.wireguard.android.preference.VersionPreference
+import com.wireguard.android.util.ModuleLoader
 import com.wireguard.android.util.RootShell
 import com.wireguard.android.util.ToolsInstaller
 import dagger.BindsInstance
@@ -95,8 +96,8 @@ object ApplicationModule {
 
     @Singleton
     @Provides
-    fun getBackend(context: Context, rootShell: RootShell, toolsInstaller: ToolsInstaller): Backend {
-        return BackendFactory.getBackend(context, rootShell, toolsInstaller)
+    fun getBackend(context: Context, moduleLoader: ModuleLoader, rootShell: RootShell, toolsInstaller: ToolsInstaller): Backend {
+        return BackendFactory.getBackend(context, moduleLoader, rootShell, toolsInstaller)
     }
 
     @Singleton

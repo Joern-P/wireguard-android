@@ -9,23 +9,33 @@ import android.content.Context
 import com.wireguard.android.backend.Backend
 import com.wireguard.android.backend.GoBackend
 import com.wireguard.android.backend.WgQuickBackend
+import com.wireguard.android.util.ModuleLoader
 import com.wireguard.android.util.RootShell
 import com.wireguard.android.util.ToolsInstaller
-import java.io.File
 
 object BackendFactory {
-    fun getBackend(context: Context, rootShell: RootShell, toolsInstaller: ToolsInstaller): Backend {
-        var ret: Backend? = null
-        if (File("/sys/module/wireguard").exists()) {
+    fun getBackend(context: Context, moduleLoader: ModuleLoader, rootShell: RootShell, toolsInstaller: ToolsInstaller): Backend {
+        var backend: Backend? = null
+        var didStartRootShell = false
+        if (!ModuleLoader.isModuleLoaded() && moduleLoader.moduleMightExist()) {
             try {
                 rootShell.start()
-                ret = WgQuickBackend(context, rootShell, toolsInstaller)
+                didStartRootShell = true
+                moduleLoader.loadModule()
             } catch (_: Exception) {
             }
         }
-        if (ret == null) {
-            ret = GoBackend(context)
+        if (ModuleLoader.isModuleLoaded()) {
+            try {
+                if (!didStartRootShell)
+                    rootShell.start()
+                backend = WgQuickBackend(context, rootShell, toolsInstaller)
+            } catch (_: Exception) {
+            }
         }
-        return ret
+        if (backend == null) {
+            backend = GoBackend(context)
+        }
+        return backend
     }
 }
