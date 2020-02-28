@@ -96,7 +96,7 @@ object ApplicationModule {
     @Singleton
     @Provides
     fun getBackend(context: Context, rootShell: RootShell, toolsInstaller: ToolsInstaller): Backend {
-        return BackendFactory.getBackend(context, rootShell)
+        return BackendFactory.getBackend(context, rootShell, toolsInstaller)
     }
 
     @Singleton

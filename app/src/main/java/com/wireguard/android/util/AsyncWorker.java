@@ -9,6 +9,9 @@ import android.os.Handler;
 
 import java.util.concurrent.Executor;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 import java9.util.concurrent.CompletableFuture;
 import java9.util.concurrent.CompletionStage;
 
@@ -16,10 +19,12 @@ import java9.util.concurrent.CompletionStage;
  * Helper class for running asynchronous tasks and ensuring they are completed on the main thread.
  */
 
+@Singleton
 public class AsyncWorker {
     private final Executor executor;
     private final Handler handler;
 
+    @Inject
     public AsyncWorker(final Executor executor, final Handler handler) {
         this.executor = executor;
         this.handler = handler;

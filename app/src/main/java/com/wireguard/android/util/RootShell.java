@@ -22,10 +22,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.UUID;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 /**
  * Helper class for running commands as root.
  */
 
+@Singleton
 public class RootShell {
     private static final String SU = "su";
     private static final String TAG = "WireGuard/" + RootShell.class.getSimpleName();
@@ -41,6 +45,7 @@ public class RootShell {
     @Nullable private OutputStreamWriter stdin;
     @Nullable private BufferedReader stdout;
 
+    @Inject
     public RootShell(final Context context) {
         deviceNotRootedMessage = context.getString(R.string.error_root);
         localBinaryDir = new File(context.getCodeCacheDir(), "bin");

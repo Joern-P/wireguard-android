@@ -10,16 +10,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
+
 import androidx.annotation.Nullable;
 import androidx.collection.ArraySet;
 import android.util.Log;
 
-import com.wireguard.android.Application;
 import com.wireguard.android.R;
 import com.wireguard.android.activity.MainActivity;
+import com.wireguard.android.di.InjectorProvider;
 import com.wireguard.android.model.Tunnel;
 import com.wireguard.android.model.Tunnel.State;
 import com.wireguard.android.model.Tunnel.Statistics;
+import com.wireguard.android.model.TunnelManager;
 import com.wireguard.android.util.ExceptionLoggers;
 import com.wireguard.android.util.SharedLibraryLoader;
 import com.wireguard.config.Config;
@@ -34,6 +36,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import javax.inject.Inject;
 
 import java9.util.concurrent.CompletableFuture;
 
@@ -252,19 +256,21 @@ public final class GoBackend implements Backend {
     }
 
     public static class VpnService extends android.net.VpnService {
+        @Inject TunnelManager tunnelManager;
         public Builder getBuilder() {
             return new Builder();
         }
 
         @Override
         public void onCreate() {
+            ((InjectorProvider) getApplicationContext()).getComponent().inject(this);
             vpnService.complete(this);
             super.onCreate();
         }
 
         @Override
         public void onDestroy() {
-            Application.getTunnelManager().getTunnels().thenAccept(tunnels -> {
+            tunnelManager.getTunnels().thenAccept(tunnels -> {
                 for (final Tunnel tunnel : tunnels) {
                     if (tunnel != null && tunnel.getState() != State.DOWN)
                         tunnel.setState(State.DOWN);
@@ -280,7 +286,7 @@ public final class GoBackend implements Backend {
             vpnService.complete(this);
             if (intent == null || intent.getComponent() == null || !intent.getComponent().getPackageName().equals(getPackageName())) {
                 Log.d(TAG, "Service started by Always-on VPN feature");
-                Application.getTunnelManager().restoreState(true).whenComplete(ExceptionLoggers.D);
+                tunnelManager.restoreState(true).whenComplete(ExceptionLoggers.D);
             }
             return super.onStartCommand(intent, flags, startId);
         }

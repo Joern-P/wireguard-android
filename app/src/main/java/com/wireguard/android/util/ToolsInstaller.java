@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 import android.system.OsConstants;
 import android.util.Log;
 
-import com.wireguard.android.Application;
 import com.wireguard.android.BuildConfig;
 import com.wireguard.android.R;
 import com.wireguard.android.util.RootShell.NoRootException;
@@ -21,10 +20,14 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 /**
  * Helper to install WireGuard tools to the system partition.
  */
 
+@Singleton
 public final class ToolsInstaller {
     public static final int ERROR = 0x0;
     public static final int MAGISK = 0x4;
@@ -42,12 +45,15 @@ public final class ToolsInstaller {
     private final Context context;
     private final File localBinaryDir;
     private final Object lock = new Object();
+    private final RootShell rootShell;
     @Nullable private Boolean areToolsAvailable;
     @Nullable private Boolean installAsMagiskModule;
 
-    public ToolsInstaller(final Context context) {
+    @Inject
+    public ToolsInstaller(final Context context, final RootShell rootShell) {
         localBinaryDir = new File(context.getCodeCacheDir(), "bin");
         this.context = context;
+        this.rootShell = rootShell;
     }
 
     @Nullable
@@ -74,7 +80,7 @@ public final class ToolsInstaller {
         }
         script.append("exit ").append(OsConstants.EALREADY).append(';');
         try {
-            final int ret = Application.getRootShell().run(null, script.toString());
+            final int ret = rootShell.run(null, script.toString());
             if (ret == OsConstants.EALREADY)
                 return willInstallAsMagiskModule() ? YES | MAGISK : YES | SYSTEM;
             else
@@ -122,7 +128,7 @@ public final class ToolsInstaller {
         script.append("trap - INT TERM EXIT;");
 
         try {
-            return Application.getRootShell().run(null, script.toString()) == 0 ? YES | MAGISK : ERROR;
+            return rootShell.run(null, script.toString()) == 0 ? YES | MAGISK : ERROR;
         } catch (final IOException ignored) {
             return ERROR;
         }
@@ -140,7 +146,7 @@ public final class ToolsInstaller {
                     new File(localBinaryDir, name), destination, destination, destination));
         }
         try {
-            return Application.getRootShell().run(null, script.toString()) == 0 ? YES | SYSTEM : ERROR;
+            return rootShell.run(null, script.toString()) == 0 ? YES | SYSTEM : ERROR;
         } catch (final IOException ignored) {
             return ERROR;
         }
@@ -173,7 +179,7 @@ public final class ToolsInstaller {
         synchronized (lock) {
             if (installAsMagiskModule == null) {
                 try {
-                    installAsMagiskModule = Application.getRootShell().run(null, "[ -d /sbin/.magisk/mirror -a -d /sbin/.magisk/img -a ! -f /cache/.disable_magisk ]") == OsConstants.EXIT_SUCCESS;
+                    installAsMagiskModule = rootShell.run(null, "[ -d /sbin/.magisk/mirror -a -d /sbin/.magisk/img -a ! -f /cache/.disable_magisk ]") == OsConstants.EXIT_SUCCESS;
                 } catch (final Exception ignored) {
                     installAsMagiskModule = false;
                 }
