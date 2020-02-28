@@ -156,7 +156,7 @@ public class Application extends android.app.Application implements InjectorProv
         asyncWorker = new AsyncWorker(AsyncTask.SERIAL_EXECUTOR, new Handler(Looper.getMainLooper()));
         rootShell = new RootShell(getApplicationContext());
         toolsInstaller = new ToolsInstaller(getApplicationContext(), getRootShell());
-        moduleLoader = new ModuleLoader(getApplicationContext());
+        moduleLoader = new ModuleLoader(getApplicationContext(), getRootShell());
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {

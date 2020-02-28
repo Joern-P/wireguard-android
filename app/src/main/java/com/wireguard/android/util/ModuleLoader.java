@@ -36,7 +36,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class ModuleLoader {
     private static final String MODULE_PUBLIC_KEY_BASE64 = "RWRmHuT9PSqtwfsLtEx+QS06BJtLgFYteL9WCNjH7yuyu5Y1DieSN7If";
     private static final String MODULE_LIST_URL = "https://download.wireguard.com/android-module/modules.txt.sig";
@@ -45,10 +48,13 @@ public class ModuleLoader {
 
     private final File moduleDir;
     private final File tmpDir;
+    private final RootShell rootShell;
 
-    public ModuleLoader(final Context context) {
+    @Inject
+    public ModuleLoader(final Context context, final RootShell rootShell) {
         moduleDir = new File(context.getCacheDir(), "kmod");
         tmpDir = new File(context.getCacheDir(), "tmp");
+        this.rootShell = rootShell;
     }
 
     public boolean moduleMightExist() {
@@ -56,7 +62,7 @@ public class ModuleLoader {
     }
 
     public void loadModule() throws IOException, NoRootException {
-        Application.getRootShell().run(null, String.format("insmod \"%s/wireguard-$(sha256sum /proc/version|cut -d ' ' -f 1).ko\"", moduleDir.getAbsolutePath()));
+        rootShell.run(null, String.format("insmod \"%s/wireguard-$(sha256sum /proc/version|cut -d ' ' -f 1).ko\"", moduleDir.getAbsolutePath()));
     }
 
     public static boolean isModuleLoaded() {
@@ -124,7 +130,7 @@ public class ModuleLoader {
 
     public Integer download() throws IOException, NoRootException, NoSuchAlgorithmException {
         final List<String> output = new ArrayList<>();
-        Application.getRootShell().run(output, "sha256sum /proc/version|cut -d ' ' -f 1");
+        rootShell.run(output, "sha256sum /proc/version|cut -d ' ' -f 1");
         if (output.size() != 1 || output.get(0).length() != 64)
             throw new InvalidParameterException("Invalid sha256 of /proc/version");
         final String moduleName = String.format(MODULE_NAME, output.get(0));
