@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 apply from: 'nonnull.gradle'
 
 // Create a variable called keystorePropertiesFile, and initialize it to your
@@ -103,6 +104,7 @@ dependencies {
     implementation "androidx.preference:preference:$preferenceVersion"
     implementation "com.google.android.material:material:$materialComponentsVersion"
     implementation "com.google.code.findbugs:jsr305:$jsr305Version"
+    implementation "com.google.dagger:dagger:2.26"
     implementation "com.jakewharton.threetenabp:threetenabp:$threetenabpVersion"
     implementation "com.journeyapps:zxing-android-embedded:$zxingEmbeddedVersion"
     implementation "net.sourceforge.streamsupport:android-retrofuture:$streamsupportVersion"
@@ -110,6 +112,7 @@ dependencies {
     implementation "net.i2p.crypto:eddsa:$eddsaVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
     implementation "androidx.constraintlayout:constraintlayout:$coordinatorLayoutVersion"
+    kapt "com.google.dagger:dagger-compiler:2.26"
 }
 
 tasks.withType(JavaCompile) {
